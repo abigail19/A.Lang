@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Word Speaker Game - Stream</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url('stream.png'); /* 请替换为你的图片文件名 */
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      backdrop-filter: brightness(0.85);
+    }
+
+    h2 {
+      background-color: rgba(0, 0, 0, 0.4);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    input[type="file"],
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #333;
+      cursor: pointer;
+    }
+
+    #displayWord {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 20px;
+      background-color: rgba(0, 0, 0, 0.4);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎧 Stream: Word Speaker Game</h2>
+  <input type="file" id="fileInput" accept=".txt" />
+  <button onclick="speakRandomWord()">Speak Random Word</button>
+  <p id="displayWord"></p>
+
+  <script>
+    let wordList = [];
+
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const text = e.target.result;
+        wordList = text.split(/\r?\n/).filter(word => word.trim() !== "");
+        alert("Word list loaded. Ready to play!");
+      };
+      reader.readAsText(file);
+    });
+
+    function speakRandomWord() {
+      if (wordList.length === 0) {
+        alert("Please upload a word list first.");
+        return;
+      }
+      const word = wordList[Math.floor(Math.random() * wordList.length)];
+      document.getElementById("displayWord").textContent = word;
+      const utterance = new SpeechSynthesisUtterance(word);
+      speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>
