@@ -2,84 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Word Speaker Game - Stream</title>
+  <title>Phrotein | AI for Education & Training</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      background-image: url('stream.png'); /* 请替换为你的图片文件名 */
-      background-size: cover;
-      background-position: center;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      text-align: center;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      backdrop-filter: brightness(0.85);
     }
 
-    h2 {
-      background-color: rgba(0, 0, 0, 0.4);
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 10px;
-    }
-
-    input[type="file"],
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.8);
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
       color: #333;
-      cursor: pointer;
+      padding: 40px 20px;
+      text-align: center;
     }
 
-    #displayWord {
-      font-size: 32px;
+    header {
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    p.description {
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto;
+      color: #555;
+    }
+
+    .games-section {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-top: 60px;
+    }
+
+    .game-card {
+      width: 300px;
+      text-align: center;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      background: #fff;
+      transition: transform 0.3s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .game-title {
+      padding: 16px;
+      font-size: 1.4rem;
       font-weight: bold;
-      margin-top: 20px;
-      background-color: rgba(0, 0, 0, 0.4);
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 10px;
+      color: #34495e;
+    }
+
+    footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <h2>🎧 Stream: Word Speaker Game</h2>
-  <input type="file" id="fileInput" accept=".txt" />
-  <button onclick="speakRandomWord()">Speak Random Word</button>
-  <p id="displayWord"></p>
+  <header>
+    <h1>Phrotein</h1>
+    <p class="description">
+      Phrotein utilizes AI to design solutions for complicated problems encountered in education and training scenarios.<br />
+      It powers uniform, high-quality solutions for group training.
+    </p>
+  </header>
 
-  <script>
-    let wordList = [];
+  <section class="games-section">
+    <a href="promise.html" class="game-card">
+      <img src="Promise.jpg" alt="Promise Game" />
+      <div class="game-title">Promise</div>
+    </a>
 
-    document.getElementById('fileInput').addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const text = e.target.result;
-        wordList = text.split(/\r?\n/).filter(word => word.trim() !== "");
-        alert("Word list loaded. Ready to play!");
-      };
-      reader.readAsText(file);
-    });
+    <a href="stream.html" class="game-card">
+      <img src="Stream.jpg" alt="Stream Game" />
+      <div class="game-title">Stream</div>
+    </a>
+  </section>
 
-    function speakRandomWord() {
-      if (wordList.length === 0) {
-        alert("Please upload a word list first.");
-        return;
-      }
-      const word = wordList[Math.floor(Math.random() * wordList.length)];
-      document.getElementById("displayWord").textContent = word;
-      const utterance = new SpeechSynthesisUtterance(word);
-      speechSynthesis.speak(utterance);
-    }
-  </script>
-</body>
-</html>
+  <footer>
+    © 2025 Phrotein. All rights
