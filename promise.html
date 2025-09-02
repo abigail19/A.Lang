@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Gallery</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    header {
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    p.description {
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto;
+      color: #555;
+    }
+
+    .image-section {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-top: 60px;
+    }
+
+    .image-card {
+      width: 300px;
+      text-align: center;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      background: #fff;
+      transition: transform 0.3s ease;
+    }
+
+    .image-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .image-title {
+      padding: 16px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #34495e;
+    }
+
+    footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Image Gallery</h1>
+    <p class="description">
+      A collection of PNG and JPG images stored in the current directory's "images" folder.<br />
+      Hover over an image card to see the hover effect.
+    </p>
+  </header>
+
+  <section class="image-section">
+    <!-- PNG 格式图片 -->
+    <div class="image-card">
+      <img src="./images/Bucket.png" alt="Bucket Image" />
+      <div class="image-title">Bucket.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/Promise.png" alt="Promise Image" />
+      <div class="image-title">Promise.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/Stream.png" alt="Stream Image" />
+      <div class="image-title">Stream.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/checker.png" alt="Checker Image" />
+      <div class="image-title">checker.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/flock.png" alt="Flock Image" />
+      <div class="image-title">flock.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/issac.png" alt="Issac Image" />
+      <div class="image-title">issac.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/pray.png" alt="Pray Image" />
+      <div class="image-title">pray.png</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/rope.png" alt="Rope Image" />
+      <div class="image-title">rope.png</div>
+    </div>
+
+    <!-- JPG 格式图片 -->
+    <div class="image-card">
+      <img src="./images/abraham.jpg" alt="Abraham Image" />
+      <div class="image-title">abraham.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/abram.jpg" alt="Abram Image" />
+      <div class="image-title">abram.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/baby.jpg" alt="Baby Image" />
+      <div class="image-title">baby.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/dunky.jpg" alt="Dunky Image" />
+      <div class="image-title">dunky.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/faith.jpg" alt="Faith Image" />
+      <div class="image-title">faith.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/ishmah.jpg" alt="Ishmah Image" />
+      <div class="image-title">ishmah.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/provision.jpg" alt="Provision Image" />
+      <div class="image-title">provision.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/sarah.jpg" alt="Sarah Image" />
+      <div class="image-title">sarah.jpg</div>
+    </div>
+
+    <div class="image-card">
+      <img src="./images/sheep flock.jpg" alt="Sheep Flock Image" />
+      <div class="image-title">sheep flock.jpg</div>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Image Gallery. All Rights Reserved.
+  </footer>
+</body>
+</html>
