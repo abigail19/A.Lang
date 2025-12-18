@@ -1,85 +1,743 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Word Speaker Game - Stream</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-image: url('stream.png'); /* 请替换为你的图片文件名 */
-      background-size: cover;
-      background-position: center;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      text-align: center;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      backdrop-filter: brightness(0.85);
-    }
+import React, { useState, useEffect, useRef } from "react";
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
+import {
+  Volume2,
+  BookOpen,
+  Award,
+  Play,
+  Check,
+  X,
+  Upload,
+  Settings,
+  RefreshCw,
+  Save,
+  Mic,
+} from "lucide-react";
+import backgroundImage from "figma:asset/94cd69edaaa0b35265cb77e120b7f82af7858dcf.png";
 
-    h2 {
-      background-color: rgba(0, 0, 0, 0.4);
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 10px;
-    }
+// 语音缓存
+const voiceCache = new Map<string, string>();
 
-    input[type="file"],
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.8);
-      color: #333;
-      cursor: pointer;
-    }
+export default function App() {
+  const [words, setWords] = useState<string[]>([]);
+  const [fileName, setFileName] = useState<string>("");
+  const [currentWord, setCurrentWord] = useState<string>("");
+  const [userInput, setUserInput] = useState<string>("");
+  const [collectedWords, setCollectedWords] = useState<Set<string>>(new Set());
+  const [showFeedback, setShowFeedback] = useState<"correct" | "incorrect" | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [ttsApiUrl, setTtsApiUrl] = useState<string>("http://localhost:5002/api/tts");
+  const [showSettings, setShowSettings] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [ttsError, setTtsError] = useState<string>("");
+  const [useBrowserTTS, setUseBrowserTTS] = useState(true); // 默认使用浏览器TTS（质量更可控）
+  
+  // 新增语音配置
+  const [voiceSettings, setVoiceSettings] = useState({
+    rate: 0.7, // 语速（更慢，提升清晰度）
+    pitch: 1.0, // 音调
+    volume: 1.0, // 音量
+    language: "en-US", // 语言
+    voiceName: "", // 选定的语音名称
+  });
+  
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isLoadingVoices, setIsLoadingVoices] = useState(true);
 
-    #displayWord {
-      font-size: 32px;
-      font-weight: bold;
-      margin-top: 20px;
-      background-color: rgba(0, 0, 0, 0.4);
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h2>🎧 Stream: Word Speaker Game</h2>
-  <input type="file" id="fileInput" accept=".txt" />
-  <button onclick="speakRandomWord()">Speak Random Word</button>
-  <p id="displayWord"></p>
+  // 加载可用的语音合成声音
+  useEffect(() => {
+    const loadVoices = () => {
+      if ("speechSynthesis" in window) {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          setAvailableVoices(voices);
+          setIsLoadingVoices(false);
+          
+          // 默认选择高质量的英文语音
+          const defaultVoice = voices.find(voice => 
+            voice.lang === "en-US" && voice.name.includes("Google") || 
+            voice.lang === "en-US" && voice.name.includes("Microsoft")
+          );
+          
+          if (defaultVoice) {
+            setVoiceSettings(prev => ({
+              ...prev,
+              voiceName: defaultVoice.name
+            }));
+          }
+        }
+      }
+    };
 
-  <script>
-    let wordList = [];
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
 
-    document.getElementById('fileInput').addEventListener('change', function (e) {
-      const file = e.target.files[0];
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFileName(file.name);
       const reader = new FileReader();
-      reader.onload = function (e) {
-        const text = e.target.result;
-        wordList = text.split(/\r?\n/).filter(word => word.trim() !== "");
-        alert("Word list loaded. Ready to play!");
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const wordList = text
+          .split("\n")
+          .map((word) => word.trim())
+          .map((word) => word.replace(/[^a-zA-Z\s]/g, ""))
+          .filter((word) => word.length > 0);
+        setWords(wordList);
+        setCollectedWords(new Set());
+        setCurrentWord("");
+        setUserInput("");
+        setShowFeedback(null);
       };
       reader.readAsText(file);
-    });
+    }
+  };
 
-    function speakRandomWord() {
-      if (wordList.length === 0) {
-        alert("Please upload a word list first.");
+  // 优化的语音合成函数
+  const speakWord = async (word: string) => {
+    setIsPlaying(true);
+    setTtsError("");
+    
+    // 如果启用浏览器TTS，直接使用高质量配置
+    if (useBrowserTTS) {
+      speakWithBrowserTTS(word);
+      return;
+    }
+    
+    try {
+      // 检查缓存
+      if (voiceCache.has(word)) {
+        const audioUrl = voiceCache.get(word)!;
+        await playAudioFromUrl(audioUrl, word);
         return;
       }
-      const word = wordList[Math.floor(Math.random() * wordList.length)];
-      document.getElementById("displayWord").textContent = word;
-      const utterance = new SpeechSynthesisUtterance(word);
-      speechSynthesis.speak(utterance);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 延长超时时间
+      
+      const response = await fetch(ttsApiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: word,
+          language: voiceSettings.language,
+          // 传递更多语音参数给API
+          voice_params: {
+            speed: voiceSettings.rate,
+            pitch: voiceSettings.pitch,
+            volume: voiceSettings.volume,
+          }
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // 缓存音频
+        voiceCache.set(word, audioUrl);
+        
+        await playAudioFromUrl(audioUrl, word);
+      } else {
+        throw new Error(`TTS API returned status ${response.status}`);
+      }
+    } catch (error: any) {
+      console.error("Error calling TTS API:", error);
+      
+      if (error.name === 'AbortError') {
+        setTtsError("TTS server timeout. Using high-quality browser TTS.");
+      } else if (error.message?.includes('Failed to fetch')) {
+        setTtsError("Cannot connect to TTS server. Using high-quality browser TTS.");
+      } else {
+        setTtsError("TTS API error. Using high-quality browser TTS.");
+      }
+      
+      speakWithBrowserTTS(word);
     }
-  </script>
-</body>
-</html>
+  };
+
+  // 播放音频URL
+  const playAudioFromUrl = async (audioUrl: string, word: string) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    
+    const audio = new Audio(audioUrl);
+    audio.volume = voiceSettings.volume; // 设置音量
+    audioRef.current = audio;
+    
+    audio.onended = () => {
+      setIsPlaying(false);
+    };
+    
+    audio.onerror = () => {
+      setIsPlaying(false);
+      setTtsError("Error playing audio. Using high-quality browser TTS.");
+      speakWithBrowserTTS(word);
+    };
+    
+    try {
+      await audio.play();
+    } catch (playError) {
+      console.error("Error playing cached audio:", playError);
+      speakWithBrowserTTS(word);
+    }
+  };
+
+  // 高质量浏览器TTS实现
+  const speakWithBrowserTTS = (word: string) => {
+    if (!("speechSynthesis" in window)) {
+      setIsPlaying(false);
+      setTtsError("Browser does not support speech synthesis");
+      return;
+    }
+
+    // 取消任何正在播放的语音
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(word);
+    
+    // 应用高质量配置
+    utterance.rate = voiceSettings.rate;
+    utterance.pitch = voiceSettings.pitch;
+    utterance.volume = voiceSettings.volume;
+    utterance.lang = voiceSettings.language;
+    
+    // 选择指定的语音
+    if (voiceSettings.voiceName) {
+      const selectedVoice = availableVoices.find(voice => voice.name === voiceSettings.voiceName);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+    }
+    
+    // 事件处理
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = (event) => {
+      console.error("TTS Error:", event.error);
+      setIsPlaying(false);
+      setTtsError(`Speech synthesis error: ${event.error}`);
+    };
+    
+    // 播放语音
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // 测试语音配置
+  const testVoiceSettings = () => {
+    speakWord("Hello, this is a test of the high quality voice.");
+  };
+
+  // 重置语音缓存
+  const clearVoiceCache = () => {
+    // 释放所有URL对象
+    voiceCache.forEach(url => URL.revokeObjectURL(url));
+    voiceCache.clear();
+    setTtsError("Voice cache cleared successfully");
+    setTimeout(() => setTtsError(""), 3000);
+  };
+
+  const selectRandomWord = () => {
+    if (words.length > 0) {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      const word = words[randomIndex];
+      setCurrentWord(word);
+      setUserInput("");
+      setShowFeedback(null);
+      speakWord(word);
+    }
+  };
+
+  const checkAnswer = () => {
+    const cleanUserInput = userInput
+      .replace(/[^a-zA-Z\s]/g, "")
+      .trim()
+      .toLowerCase();
+    const cleanCurrentWord = currentWord
+      .replace(/[^a-zA-Z\s]/g, "")
+      .trim()
+      .toLowerCase();
+
+    if (cleanUserInput === cleanCurrentWord) {
+      setShowFeedback("correct");
+      setCollectedWords(new Set([...collectedWords, currentWord]));
+      setTimeout(() => {
+        setShowFeedback(null);
+        selectRandomWord();
+      }, 1500);
+    } else {
+      setShowFeedback("incorrect");
+      setTimeout(() => setShowFeedback(null), 1000);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && userInput.trim() && currentWord) {
+      checkAnswer();
+    }
+  };
+
+  // 保存语音配置
+  const saveVoiceSettings = () => {
+    localStorage.setItem('voiceSettings', JSON.stringify(voiceSettings));
+    setTtsError("Voice settings saved successfully!");
+    setTimeout(() => setTtsError(""), 3000);
+  };
+
+  // 加载保存的配置
+  useEffect(() => {
+    const saved = localStorage.getItem('voiceSettings');
+    if (saved) {
+      try {
+        setVoiceSettings(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load saved voice settings", e);
+      }
+    }
+  }, []);
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/95 via-indigo-900/90 to-blue-900/95" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col p-8">
+        {/* Header */}
+        <header className="text-center mb-8 relative">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <BookOpen className="w-12 h-12 text-yellow-300" />
+            <h1 className="text-5xl text-white tracking-wide">
+              🎧Stream
+            </h1>
+          </div>
+          <p className="text-xl text-yellow-200/90">
+            Collect Word Treasures from the Library
+          </p>
+          
+          {/* Settings Button */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="absolute top-0 right-0 bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl transition-all"
+            title="TTS Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+
+          {/* Enhanced Settings Panel */}
+          {showSettings && (
+            <div className="mt-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 max-w-3xl mx-auto text-left">
+              <h3 className="text-white mb-4 flex items-center gap-2">
+                <Mic className="w-5 h-5 text-yellow-300" />
+                High-Quality Voice Settings
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Basic TTS Settings */}
+                <div className="space-y-4">
+                  {/* TTS Mode Toggle */}
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="use-browser-tts"
+                      checked={useBrowserTTS}
+                      onChange={(e) => setUseBrowserTTS(e.target.checked)}
+                      className="w-5 h-5 rounded"
+                    />
+                    <label htmlFor="use-browser-tts" className="text-white cursor-pointer">
+                      Use High-Quality Browser TTS
+                    </label>
+                  </div>
+
+                  {!useBrowserTTS && (
+                    <>
+                      <label className="block text-white/80 text-sm">
+                        API Endpoint URL:
+                      </label>
+                      <input
+                        type="text"
+                        value={ttsApiUrl}
+                        onChange={(e) => setTtsApiUrl(e.target.value)}
+                        placeholder="http://localhost:5002/api/tts"
+                        className="w-full px-4 py-2 rounded-lg bg-white/90 text-purple-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      />
+                      <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-lg p-3 text-sm">
+                        <p className="text-yellow-200">
+                          <strong>⚠️ Tip:</strong> For best results, use XTTS-v2 or Coqui TTS with high-quality voice models.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Cache Management */}
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <button
+                      onClick={clearVoiceCache}
+                      className="flex items-center gap-2 text-white/80 hover:text-white text-sm bg-red-500/20 hover:bg-red-500/30 px-3 py-1 rounded-lg transition-colors"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Clear Voice Cache
+                    </button>
+                    <span className="text-white/60 text-xs">
+                      {voiceCache.size} cached voices
+                    </span>
+                  </div>
+                </div>
+
+                {/* Advanced Voice Settings (Browser TTS) */}
+                <div className="space-y-4">
+                  <h4 className="text-white/90 font-medium">Voice Quality Controls</h4>
+                  
+                  {/* Voice Selection */}
+                  <div className="space-y-2">
+                    <label className="block text-white/80 text-sm">
+                      Select Voice:
+                    </label>
+                    {isLoadingVoices ? (
+                      <div className="text-white/60 text-sm p-2 bg-white/5 rounded-lg">
+                        Loading voices...
+                      </div>
+                    ) : (
+                      <select
+                        value={voiceSettings.voiceName}
+                        onChange={(e) => setVoiceSettings({...voiceSettings, voiceName: e.target.value})}
+                        className="w-full px-4 py-2 rounded-lg bg-white/90 text-purple-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      >
+                        <option value="">Default Voice</option>
+                        {availableVoices
+                          .filter(voice => voice.lang.includes('en'))
+                          .map(voice => (
+                            <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
+                              {voice.name} ({voice.lang})
+                            </option>
+                          ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Speech Rate */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-white/80 text-sm">
+                        Speech Rate: {voiceSettings.rate.toFixed(1)}x
+                      </label>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="1.5"
+                      step="0.1"
+                      value={voiceSettings.rate}
+                      onChange={(e) => setVoiceSettings({...voiceSettings, rate: parseFloat(e.target.value)})}
+                      className="w-full accent-yellow-400"
+                    />
+                    <div className="flex justify-between text-white/60 text-xs">
+                      <span>Slower</span>
+                      <span>Normal</span>
+                      <span>Faster</span>
+                    </div>
+                  </div>
+
+                  {/* Pitch */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-white/80 text-sm">
+                        Pitch: {voiceSettings.pitch.toFixed(1)}x
+                      </label>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2.0"
+                      step="0.1"
+                      value={voiceSettings.pitch}
+                      onChange={(e) => setVoiceSettings({...voiceSettings, pitch: parseFloat(e.target.value)})}
+                      className="w-full accent-yellow-400"
+                    />
+                    <div className="flex justify-between text-white/60 text-xs">
+                      <span>Lower</span>
+                      <span>Normal</span>
+                      <span>Higher</span>
+                    </div>
+                  </div>
+
+                  {/* Volume */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-white/80 text-sm">
+                        Volume: {Math.round(voiceSettings.volume * 100)}%
+                      </label>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={voiceSettings.volume}
+                      onChange={(e) => setVoiceSettings({...voiceSettings, volume: parseFloat(e.target.value)})}
+                      className="w-full accent-yellow-400"
+                    />
+
+                    {/* Test and Save Buttons */}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={testVoiceSettings}
+                        className="flex-1 flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-white py-2 rounded-lg transition-colors"
+                      >
+                        <Play className="w-4 h-4" />
+                        Test Voice
+                      </button>
+                      <button
+                        onClick={saveVoiceSettings}
+                        className="flex-1 flex items-center justify-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-white py-2 rounded-lg transition-colors"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save Settings
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {ttsError && (
+                <div className={`mt-4 p-3 rounded-lg ${
+                  ttsError.includes('successfully') 
+                    ? 'bg-green-500/20 border border-green-400/50 text-green-200' 
+                    : 'bg-yellow-400/20 border border-yellow-400/50 text-yellow-200'
+                }`}>
+                  {ttsError}
+                </div>
+              )}
+            </div>
+          )}
+        </header>
+
+        {/* Main Game Area */}
+        <div className="flex-1 max-w-6xl mx-auto w-full">
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* File Upload Section */}
+            <div className="md:col-span-1">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-2xl">
+                <h2 className="text-xl text-white mb-4 flex items-center gap-2">
+                  <Upload className="w-5 h-5" />
+                  Upload Word List
+                </h2>
+                <div className="space-y-3">
+                  <label className="block">
+                    <input
+                      type="file"
+                      accept=".txt"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <div className="w-full p-4 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-purple-900 cursor-pointer transition-all shadow-lg hover:scale-105 text-center flex items-center justify-center gap-2">
+                      <Upload className="w-5 h-5" />
+                      Choose TXT File
+                    </div>
+                  </label>
+                  {fileName && (
+                    <div className="bg-white/20 text-white p-3 rounded-xl text-sm">
+                      <div className="flex items-start gap-2">
+                        <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate">
+                            {fileName}
+                          </div>
+                          <div className="text-xs opacity-75 mt-1">
+                            {words.length} words loaded
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {!fileName && (
+                    <div className="text-white/60 text-sm p-3 bg-white/5 rounded-xl">
+                      Upload a .txt file with one word per line
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Collected Treasures */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-2xl mt-6">
+                <h2 className="text-xl text-white mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-yellow-300" />
+                  Treasures Collected
+                </h2>
+                <div className="text-3xl text-yellow-300 text-center mb-2">
+                  {collectedWords.size}
+                </div>
+                <div className="text-sm text-white/70 text-center">
+                  {collectedWords.size === 0
+                    ? "Start collecting!"
+                    : `out of ${words.length} words`}
+                </div>
+                {words.length > 0 && (
+                  <div className="mt-4">
+                    <div className="bg-white/10 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-yellow-400 to-orange-400 h-full transition-all duration-500"
+                        style={{
+                          width: `${(collectedWords.size / words.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Play Area */}
+            <div className="md:col-span-2">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl h-full flex flex-col">
+                {words.length === 0 ? (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center text-white/70">
+                      <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-xl">
+                        Upload a word list to begin your
+                        treasure hunt
+                      </p>
+                      <p className="text-sm mt-2 opacity-75">
+                        TXT file with one word per line
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col">
+                    {/* Play Button */}
+                    {!currentWord ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <button
+                          onClick={selectRandomWord}
+                          className="bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-purple-900 px-12 py-6 rounded-2xl text-2xl transition-all shadow-2xl hover:scale-105 flex items-center gap-3"
+                        >
+                          <Play className="w-8 h-8" />
+                          Start Listening
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col justify-center space-y-8">
+                        {/* Listen Button */}
+                        <div className="text-center">
+                          <button
+                            onClick={() => speakWord(currentWord)}
+                            disabled={isPlaying}
+                            className="bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white px-8 py-4 rounded-xl transition-all shadow-lg hover:scale-105 disabled:scale-100 flex items-center gap-3 mx-auto"
+                          >
+                            <Volume2
+                              className={`w-6 h-6 ${isPlaying ? "animate-pulse" : ""}`}
+                            />
+                            {isPlaying
+                              ? "Playing..."
+                              : "Listen Again"}
+                          </button>
+                          
+                          {/* TTS Error Message */}
+                          {ttsError && !ttsError.includes('successfully') && (
+                            <div className="mt-3 text-yellow-300 text-sm bg-yellow-400/10 border border-yellow-400/30 rounded-lg p-2 max-w-md mx-auto">
+                              {ttsError}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="space-y-4">
+                          <label className="block text-white text-center text-lg">
+                            Write what you hear:
+                          </label>
+                          <input
+                            type="text"
+                            value={userInput}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            placeholder="Type the word..."
+                            className="w-full px-6 py-4 text-2xl rounded-xl bg-white/90 text-purple-900 placeholder-purple-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 text-center"
+                            autoFocus
+                          />
+                        </div>
+
+                        {/* Check Button */}
+                        <div className="text-center">
+                          <button
+                            onClick={checkAnswer}
+                            disabled={!userInput.trim()}
+                            className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-12 py-4 rounded-xl text-xl transition-all shadow-lg hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
+                          >
+                            Check Answer
+                          </button>
+                        </div>
+
+                        {/* Feedback */}
+                        {showFeedback && (
+                          <div
+                            className={`text-center p-6 rounded-xl ${
+                              showFeedback === "correct"
+                                ? "bg-green-500/30 border-2 border-green-400"
+                                : "bg-red-500/30 border-2 border-red-400"
+                            }`}
+                          >
+                            <div className="flex items-center justify-center gap-3 text-white text-2xl">
+                              {showFeedback === "correct" ? (
+                                <>
+                                  <Check className="w-8 h-8" />
+                                  <span>
+                                    Treasure Collected! 🎉
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <X className="w-8 h-8" />
+                                  <span>Try Again!</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Next Word Button */}
+                        <div className="text-center pt-4">
+                          <button
+                            onClick={selectRandomWord}
+                            className="text-yellow-300 hover:text-yellow-200 underline"
+                          >
+                            Skip to Next Word
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center mt-8 text-white/60 text-sm">
+          <p>
+            Listen carefully and collect word treasures from the
+            magical library • High-Quality Voice Synthesis Enabled
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}
