@@ -9,75 +9,29 @@ import {
   X,
   Upload,
   Settings,
-  RefreshCw,
-  Save,
-  Mic,
 } from "lucide-react";
 import backgroundImage from "figma:asset/94cd69edaaa0b35265cb77e120b7f82af7858dcf.png";
-
-// 语音缓存
-const voiceCache = new Map<string, string>();
 
 export default function App() {
   const [words, setWords] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [currentWord, setCurrentWord] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
-  const [collectedWords, setCollectedWords] = useState<Set<string>>(new Set());
-  const [showFeedback, setShowFeedback] = useState<"correct" | "incorrect" | null>(null);
+  const [collectedWords, setCollectedWords] = useState<
+    Set<string>
+  >(new Set());
+  const [showFeedback, setShowFeedback] = useState<
+    "correct" | "incorrect" | null
+  >(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [ttsApiUrl, setTtsApiUrl] = useState<string>("http://localhost:5002/api/tts");
   const [showSettings, setShowSettings] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ttsError, setTtsError] = useState<string>("");
-  const [useBrowserTTS, setUseBrowserTTS] = useState(true); // 默认使用浏览器TTS（质量更可控）
-  
-  // 新增语音配置
-  const [voiceSettings, setVoiceSettings] = useState({
-    rate: 0.7, // 语速（更慢，提升清晰度）
-    pitch: 1.0, // 音调
-    volume: 1.0, // 音量
-    language: "en-US", // 语言
-    voiceName: "", // 选定的语音名称
-  });
-  
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [isLoadingVoices, setIsLoadingVoices] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("en-US");
 
-  // 加载可用的语音合成声音
-  useEffect(() => {
-    const loadVoices = () => {
-      if ("speechSynthesis" in window) {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          setAvailableVoices(voices);
-          setIsLoadingVoices(false);
-          
-          // 默认选择高质量的英文语音
-          const defaultVoice = voices.find(voice => 
-            voice.lang === "en-US" && voice.name.includes("Google") || 
-            voice.lang === "en-US" && voice.name.includes("Microsoft")
-          );
-          
-          if (defaultVoice) {
-            setVoiceSettings(prev => ({
-              ...prev,
-              voiceName: defaultVoice.name
-            }));
-          }
-        }
-      }
-    };
-
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       setFileName(file.name);
@@ -87,7 +41,7 @@ export default function App() {
         const wordList = text
           .split("\n")
           .map((word) => word.trim())
-          .map((word) => word.replace(/[^a-zA-Z\s]/g, ""))
+          .map((word) => word.replace(/[^a-zA-Z\s]/g, "")) // Remove all non-letter characters except spaces
           .filter((word) => word.length > 0);
         setWords(wordList);
         setCollectedWords(new Set());
@@ -99,158 +53,109 @@ export default function App() {
     }
   };
 
-  // 优化的语音合成函数
   const speakWord = async (word: string) => {
     setIsPlaying(true);
     setTtsError("");
     
-    // 如果启用浏览器TTS，直接使用高质量配置
-    if (useBrowserTTS) {
-      speakWithBrowserTTS(word);
-      return;
-    }
-    
     try {
-      // 检查缓存
-      if (voiceCache.has(word)) {
-        const audioUrl = voiceCache.get(word)!;
-        await playAudioFromUrl(audioUrl, word);
-        return;
-      }
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 延长超时时间
-      
-      const response = await fetch(ttsApiUrl, {
+      // Use Sound of Text API
+      // Step 1: Submit the text to generate audio
+      const submitResponse = await fetch("https://api.soundoftext.com/sounds", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: word,
-          language: voiceSettings.language,
-          // 传递更多语音参数给API
-          voice_params: {
-            speed: voiceSettings.rate,
-            pitch: voiceSettings.pitch,
-            volume: voiceSettings.volume,
-          }
+          engine: "Google",
+          data: {
+            text: word,
+            voice: selectedLanguage, // Language code like 'en-US', 'en-GB', etc.
+          },
         }),
-        signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        // 缓存音频
-        voiceCache.set(word, audioUrl);
-        
-        await playAudioFromUrl(audioUrl, word);
-      } else {
-        throw new Error(`TTS API returned status ${response.status}`);
+      if (!submitResponse.ok) {
+        throw new Error("Failed to submit TTS request");
       }
-    } catch (error: any) {
-      console.error("Error calling TTS API:", error);
-      
-      if (error.name === 'AbortError') {
-        setTtsError("TTS server timeout. Using high-quality browser TTS.");
-      } else if (error.message?.includes('Failed to fetch')) {
-        setTtsError("Cannot connect to TTS server. Using high-quality browser TTS.");
-      } else {
-        setTtsError("TTS API error. Using high-quality browser TTS.");
-      }
-      
-      speakWithBrowserTTS(word);
-    }
-  };
 
-  // 播放音频URL
-  const playAudioFromUrl = async (audioUrl: string, word: string) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    
-    const audio = new Audio(audioUrl);
-    audio.volume = voiceSettings.volume; // 设置音量
-    audioRef.current = audio;
-    
-    audio.onended = () => {
-      setIsPlaying(false);
-    };
-    
-    audio.onerror = () => {
-      setIsPlaying(false);
-      setTtsError("Error playing audio. Using high-quality browser TTS.");
-      speakWithBrowserTTS(word);
-    };
-    
-    try {
+      const submitData = await submitResponse.json();
+      const soundId = submitData.id;
+
+      if (!soundId) {
+        throw new Error("No sound ID returned");
+      }
+
+      // Step 2: Poll for the audio to be ready
+      let audioUrl = null;
+      let attempts = 0;
+      const maxAttempts = 20;
+
+      while (!audioUrl && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between checks
+        
+        const statusResponse = await fetch(`https://api.soundoftext.com/sounds/${soundId}`);
+        
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          
+          if (statusData.status === "Done") {
+            audioUrl = statusData.location;
+            break;
+          } else if (statusData.status === "Error") {
+            throw new Error("TTS generation failed");
+          }
+        }
+        
+        attempts++;
+      }
+
+      if (!audioUrl) {
+        throw new Error("Timeout waiting for audio generation");
+      }
+
+      // Step 3: Play the audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setIsPlaying(false);
+      };
+
+      audio.onerror = () => {
+        setIsPlaying(false);
+        setTtsError("Error playing audio. Using browser TTS.");
+        fallbackToWebSpeech(word);
+      };
+
       await audio.play();
-    } catch (playError) {
-      console.error("Error playing cached audio:", playError);
-      speakWithBrowserTTS(word);
+    } catch (error: any) {
+      console.error("Error calling Sound of Text API:", error);
+      setTtsError("TTS service unavailable. Using browser TTS.");
+      fallbackToWebSpeech(word);
     }
   };
 
-  // 高质量浏览器TTS实现
-  const speakWithBrowserTTS = (word: string) => {
-    if (!("speechSynthesis" in window)) {
+  const fallbackToWebSpeech = (word: string) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.rate = 0.8;
+      utterance.onend = () => setIsPlaying(false);
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    } else {
       setIsPlaying(false);
-      setTtsError("Browser does not support speech synthesis");
-      return;
     }
-
-    // 取消任何正在播放的语音
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(word);
-    
-    // 应用高质量配置
-    utterance.rate = voiceSettings.rate;
-    utterance.pitch = voiceSettings.pitch;
-    utterance.volume = voiceSettings.volume;
-    utterance.lang = voiceSettings.language;
-    
-    // 选择指定的语音
-    if (voiceSettings.voiceName) {
-      const selectedVoice = availableVoices.find(voice => voice.name === voiceSettings.voiceName);
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
-    }
-    
-    // 事件处理
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = (event) => {
-      console.error("TTS Error:", event.error);
-      setIsPlaying(false);
-      setTtsError(`Speech synthesis error: ${event.error}`);
-    };
-    
-    // 播放语音
-    window.speechSynthesis.speak(utterance);
-  };
-
-  // 测试语音配置
-  const testVoiceSettings = () => {
-    speakWord("Hello, this is a test of the high quality voice.");
-  };
-
-  // 重置语音缓存
-  const clearVoiceCache = () => {
-    // 释放所有URL对象
-    voiceCache.forEach(url => URL.revokeObjectURL(url));
-    voiceCache.clear();
-    setTtsError("Voice cache cleared successfully");
-    setTimeout(() => setTtsError(""), 3000);
   };
 
   const selectRandomWord = () => {
     if (words.length > 0) {
-      const randomIndex = Math.floor(Math.random() * words.length);
+      const randomIndex = Math.floor(
+        Math.random() * words.length,
+      );
       const word = words[randomIndex];
       setCurrentWord(word);
       setUserInput("");
@@ -260,6 +165,7 @@ export default function App() {
   };
 
   const checkAnswer = () => {
+    // Remove all non-letter characters and compare case-insensitively
     const cleanUserInput = userInput
       .replace(/[^a-zA-Z\s]/g, "")
       .trim()
@@ -271,7 +177,9 @@ export default function App() {
 
     if (cleanUserInput === cleanCurrentWord) {
       setShowFeedback("correct");
-      setCollectedWords(new Set([...collectedWords, currentWord]));
+      setCollectedWords(
+        new Set([...collectedWords, currentWord]),
+      );
       setTimeout(() => {
         setShowFeedback(null);
         selectRandomWord();
@@ -287,25 +195,6 @@ export default function App() {
       checkAnswer();
     }
   };
-
-  // 保存语音配置
-  const saveVoiceSettings = () => {
-    localStorage.setItem('voiceSettings', JSON.stringify(voiceSettings));
-    setTtsError("Voice settings saved successfully!");
-    setTimeout(() => setTtsError(""), 3000);
-  };
-
-  // 加载保存的配置
-  useEffect(() => {
-    const saved = localStorage.getItem('voiceSettings');
-    if (saved) {
-      try {
-        setVoiceSettings(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load saved voice settings", e);
-      }
-    }
-  }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -340,190 +229,45 @@ export default function App() {
             <Settings className="w-5 h-5" />
           </button>
 
-          {/* Enhanced Settings Panel */}
+          {/* Settings Panel */}
           {showSettings && (
-            <div className="mt-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 max-w-3xl mx-auto text-left">
-              <h3 className="text-white mb-4 flex items-center gap-2">
-                <Mic className="w-5 h-5 text-yellow-300" />
-                High-Quality Voice Settings
-              </h3>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Basic TTS Settings */}
-                <div className="space-y-4">
-                  {/* TTS Mode Toggle */}
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                    <input
-                      type="checkbox"
-                      id="use-browser-tts"
-                      checked={useBrowserTTS}
-                      onChange={(e) => setUseBrowserTTS(e.target.checked)}
-                      className="w-5 h-5 rounded"
-                    />
-                    <label htmlFor="use-browser-tts" className="text-white cursor-pointer">
-                      Use High-Quality Browser TTS
-                    </label>
-                  </div>
-
-                  {!useBrowserTTS && (
-                    <>
-                      <label className="block text-white/80 text-sm">
-                        API Endpoint URL:
-                      </label>
-                      <input
-                        type="text"
-                        value={ttsApiUrl}
-                        onChange={(e) => setTtsApiUrl(e.target.value)}
-                        placeholder="http://localhost:5002/api/tts"
-                        className="w-full px-4 py-2 rounded-lg bg-white/90 text-purple-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                      />
-                      <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-lg p-3 text-sm">
-                        <p className="text-yellow-200">
-                          <strong>⚠️ Tip:</strong> For best results, use XTTS-v2 or Coqui TTS with high-quality voice models.
-                        </p>
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Cache Management */}
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                    <button
-                      onClick={clearVoiceCache}
-                      className="flex items-center gap-2 text-white/80 hover:text-white text-sm bg-red-500/20 hover:bg-red-500/30 px-3 py-1 rounded-lg transition-colors"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      Clear Voice Cache
-                    </button>
-                    <span className="text-white/60 text-xs">
-                      {voiceCache.size} cached voices
-                    </span>
-                  </div>
+            <div className="mt-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 max-w-2xl mx-auto text-left">
+              <h3 className="text-white mb-3">Audio Settings</h3>
+              <div className="space-y-3">
+                <div className="bg-blue-400/20 border border-blue-400/50 rounded-lg p-3">
+                  <p className="text-blue-200 text-xs">
+                    <strong>🔊 Using Sound of Text</strong><br/>
+                    High-quality Google TTS powered by soundoftext.com
+                  </p>
                 </div>
 
-                {/* Advanced Voice Settings (Browser TTS) */}
-                <div className="space-y-4">
-                  <h4 className="text-white/90 font-medium">Voice Quality Controls</h4>
-                  
-                  {/* Voice Selection */}
-                  <div className="space-y-2">
-                    <label className="block text-white/80 text-sm">
-                      Select Voice:
-                    </label>
-                    {isLoadingVoices ? (
-                      <div className="text-white/60 text-sm p-2 bg-white/5 rounded-lg">
-                        Loading voices...
-                      </div>
-                    ) : (
-                      <select
-                        value={voiceSettings.voiceName}
-                        onChange={(e) => setVoiceSettings({...voiceSettings, voiceName: e.target.value})}
-                        className="w-full px-4 py-2 rounded-lg bg-white/90 text-purple-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                      >
-                        <option value="">Default Voice</option>
-                        {availableVoices
-                          .filter(voice => voice.lang.includes('en'))
-                          .map(voice => (
-                            <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
-                              {voice.name} ({voice.lang})
-                            </option>
-                          ))}
-                      </select>
-                    )}
-                  </div>
-
-                  {/* Speech Rate */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-white/80 text-sm">
-                        Speech Rate: {voiceSettings.rate.toFixed(1)}x
-                      </label>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="1.5"
-                      step="0.1"
-                      value={voiceSettings.rate}
-                      onChange={(e) => setVoiceSettings({...voiceSettings, rate: parseFloat(e.target.value)})}
-                      className="w-full accent-yellow-400"
-                    />
-                    <div className="flex justify-between text-white/60 text-xs">
-                      <span>Slower</span>
-                      <span>Normal</span>
-                      <span>Faster</span>
-                    </div>
-                  </div>
-
-                  {/* Pitch */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-white/80 text-sm">
-                        Pitch: {voiceSettings.pitch.toFixed(1)}x
-                      </label>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="2.0"
-                      step="0.1"
-                      value={voiceSettings.pitch}
-                      onChange={(e) => setVoiceSettings({...voiceSettings, pitch: parseFloat(e.target.value)})}
-                      className="w-full accent-yellow-400"
-                    />
-                    <div className="flex justify-between text-white/60 text-xs">
-                      <span>Lower</span>
-                      <span>Normal</span>
-                      <span>Higher</span>
-                    </div>
-                  </div>
-
-                  {/* Volume */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-white/80 text-sm">
-                        Volume: {Math.round(voiceSettings.volume * 100)}%
-                      </label>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={voiceSettings.volume}
-                      onChange={(e) => setVoiceSettings({...voiceSettings, volume: parseFloat(e.target.value)})}
-                      className="w-full accent-yellow-400"
-                    />
-
-                    {/* Test and Save Buttons */}
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={testVoiceSettings}
-                        className="flex-1 flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-white py-2 rounded-lg transition-colors"
-                      >
-                        <Play className="w-4 h-4" />
-                        Test Voice
-                      </button>
-                      <button
-                        onClick={saveVoiceSettings}
-                        className="flex-1 flex items-center justify-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-white py-2 rounded-lg transition-colors"
-                      >
-                        <Save className="w-4 h-4" />
-                        Save Settings
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <label className="block text-white/80 text-sm">
+                  Voice Language:
+                </label>
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-white/90 text-purple-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                >
+                  <option value="en-US">English (US)</option>
+                  <option value="en-GB">English (UK)</option>
+                  <option value="en-AU">English (Australia)</option>
+                  <option value="en-IN">English (India)</option>
+                  <option value="es-ES">Spanish (Spain)</option>
+                  <option value="es-MX">Spanish (Mexico)</option>
+                  <option value="fr-FR">French</option>
+                  <option value="de-DE">German</option>
+                  <option value="it-IT">Italian</option>
+                  <option value="pt-BR">Portuguese (Brazil)</option>
+                  <option value="ja-JP">Japanese</option>
+                  <option value="ko-KR">Korean</option>
+                  <option value="zh-CN">Chinese (Simplified)</option>
+                </select>
+                
+                <p className="text-white/60 text-xs">
+                  Falls back to browser speech synthesis if the service is unavailable.
+                </p>
               </div>
-              
-              {ttsError && (
-                <div className={`mt-4 p-3 rounded-lg ${
-                  ttsError.includes('successfully') 
-                    ? 'bg-green-500/20 border border-green-400/50 text-green-200' 
-                    : 'bg-yellow-400/20 border border-yellow-400/50 text-yellow-200'
-                }`}>
-                  {ttsError}
-                </div>
-              )}
             </div>
           )}
         </header>
@@ -638,7 +382,9 @@ export default function App() {
                         {/* Listen Button */}
                         <div className="text-center">
                           <button
-                            onClick={() => speakWord(currentWord)}
+                            onClick={() =>
+                              speakWord(currentWord)
+                            }
                             disabled={isPlaying}
                             className="bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white px-8 py-4 rounded-xl transition-all shadow-lg hover:scale-105 disabled:scale-100 flex items-center gap-3 mx-auto"
                           >
@@ -651,7 +397,7 @@ export default function App() {
                           </button>
                           
                           {/* TTS Error Message */}
-                          {ttsError && !ttsError.includes('successfully') && (
+                          {ttsError && (
                             <div className="mt-3 text-yellow-300 text-sm bg-yellow-400/10 border border-yellow-400/30 rounded-lg p-2 max-w-md mx-auto">
                               {ttsError}
                             </div>
@@ -666,7 +412,9 @@ export default function App() {
                           <input
                             type="text"
                             value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
+                            onChange={(e) =>
+                              setUserInput(e.target.value)
+                            }
                             onKeyPress={handleKeyPress}
                             placeholder="Type the word..."
                             className="w-full px-6 py-4 text-2xl rounded-xl bg-white/90 text-purple-900 placeholder-purple-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 text-center"
@@ -734,7 +482,7 @@ export default function App() {
         <footer className="text-center mt-8 text-white/60 text-sm">
           <p>
             Listen carefully and collect word treasures from the
-            magical library • High-Quality Voice Synthesis Enabled
+            magical library
           </p>
         </footer>
       </div>
