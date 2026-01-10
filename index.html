@@ -109,6 +109,12 @@ While investments in education often focus on hardware, instruction and leadersh
       <img src="./images/checker.png" alt="checker" />
       <div class="game-title">checker</div>
     </a>
+
+     <a href="preschool.html" class="game-card">
+       <img src="./images/phrotein.jpg" alt="phrotein" />
+      <div class="game-title">Convert SFH to Preschools</div>
+    </a>
+
     <a href="blog1.html" class="game-card">
       <img src="./images/phrotein.jpg" alt="phrotein" />
       <div class="game-title">Practical Strategies for Theme-Based Fellowship</div>
@@ -117,9 +123,23 @@ While investments in education often focus on hardware, instruction and leadersh
 <footer style="display:flex; justify-content:space-between; align-items:center; padding:20px; margin-top:40px; font-size:14px; color:#555; border-top:1px solid #ccc;">
 
   <!-- 左边：二维码 -->
-  <div style="display:flex; align-items:center;">
-    <img src="youtube.png" alt="YouTube QR Code" style="width:100px; height:100px; margin-right:15px;">
-  </div>
+  <div style="display:flex; align-items:center; min-height:100px;">
+  <!-- 增加图片加载失败的备用文本 + 绝对路径示例 + 样式优化 -->
+  <img 
+    src="./youtube.png"  <!-- 明确指定相对路径，若图片在images文件夹则改为 ./images/youtube.png -->
+    alt="YouTube二维码（扫码关注）"  <!-- 更友好的替代文本，加载失败时显示 -->
+    style="
+      width:100px; 
+      height:100px; 
+      margin-right:15px; 
+      object-fit:contain;  <!-- 保证图片比例不变形 -->
+      border:1px solid #eee;  <!-- 增加边框，方便确认图片区域 -->
+      background:#f9f9f9;  <!-- 背景色，图片加载失败时能看到占位 -->
+    "
+    <!-- 图片加载失败时的兜底处理 -->
+    onError="this.src='https://via.placeholder.com/100x100?text=二维码'"
+  >
+</div>
 
   <!-- 中间：公司信息 -->
   <div style="text-align:left; line-height:1.6;">
