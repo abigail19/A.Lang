@@ -3,50 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preschool Business Thriver Services</title>
+    <title>Preschool Business Thriver</title>
     <style>
-        body {
+        /* Base Styles */
+        * {
             margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
             background-color: #f8f5f0;
+            color: #333;
+            line-height: 1.6;
         }
-        .main-container {
-            max-width: 1000px;
+
+        /* Container */
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section - Image is now clickable */
+        .hero {
             position: relative;
-        }
-        .main-image {
             width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            height: 80vh;
+            min-height: 600px;
+            margin-bottom: 40px;
+            cursor: pointer; /* Indicate clickable area */
         }
-        /* 下载按钮悬浮在图上（也可以放在图下方） */
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .hero:hover .hero-image {
+            transform: scale(1.01); /* Subtle hover effect */
+        }
+
+        /* Download Button */
         .download-btn {
             position: absolute;
-            bottom: 40px;
-            right: 40px;
+            bottom: 50px;
+            right: 50px;
             background-color: #ff9966;
             color: #000;
-            padding: 15px 25px;
+            padding: 18px 30px;
             font-size: 18px;
             font-weight: bold;
             text-decoration: none;
-            border-radius: 6px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            transition: background-color 0.3s;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            text-align: center;
+            z-index: 10;
         }
+
         .download-btn:hover {
             background-color: #ff7733;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);
         }
+
+        /* Content Section */
+        .content {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .content h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            font-size: 18px;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: #555;
+        }
+
+        /* Footer Section */
+        footer {
+            background-color: #f0e9e0;
+            padding: 20px 0;
+            margin-top: 40px;
+            border-top: 1px solid #e0d8cf;
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .qr-code {
+            width: 80px;
+            height: 80px;
+        }
+
+        .contact-info {
+            background-color: #e6e6fa;
+            padding: 12px 20px;
+            border-radius: 6px;
+        }
+
+        .contact-info p {
+            margin: 4px 0;
+            font-size: 14px;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero {
+                height: 60vh;
+                min-height: 400px;
+            }
+
+            .download-btn {
+                position: static;
+                display: block;
+                width: 80%;
+                margin: 20px auto;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .content h1 {
+                font-size: 26px;
+            }
+
+            .content p {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="main-container">
-        <img src="./images/card.png"）" alt="Convert SFH to Preschool Business" class="main-image">
-        <a href="./images/checklist.png"" class="download-btn" download>
-            Free Download<br>Child Care Center Setup Checker List
-        </a>
-    </div>
+    <!-- Clickable Hero Image (redirects to target URL) -->
+    <a href="https://kneel-cheer-34234044.figma.site" target="_blank" rel="noopener noreferrer">
+        <section class="hero container">
+            <img 
+                src="/image/card.png" 
+                alt="Preschool Business Thriver Services - Click to visit Word Treasure Library" 
+                class="hero-image"
+            >
+            <!-- Download Button (still functional) -->
+            <a href="#" class="download-btn" download>
+                Free Download<br>Child Care Center Setup Checker List
+            </a>
+        </section>
+    </a>
+
+    <!-- Main Content Section -->
+    <section class="content container">
+        <h1>Preschool Business Thriver Services</h1>
+        <p>
+            We help preschool and child care business owners build successful, sustainable businesses 
+            with our expert guidance, checklists, and resources. From setup to daily operations, 
+            we've got you covered.
+        </p>
+        <p>Click the main image above to explore the Word Treasure Library!</p>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer-content container">
+            <!-- QR Code -->
+            <img 
+                src="/images/youtube.png" alt="Youtube Channel" /> 
+                class="qr-code"
+            >
+            
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <p><strong>Yuanfeng LLC</strong></p>
+                <p>P. +1 206-608-0001</p>
+                <p>E. phroteinai@gmail.com</p>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="copyright">
+                © 2026 Phrotein. All rights reserved.
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
-
