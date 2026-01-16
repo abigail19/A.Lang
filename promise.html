@@ -96,6 +96,73 @@ Overall, this is simple card game. That does not mean it is bad. <br />
       The opposite is actually true: this is a fun, light card game. This could be a great filler or a card game for lighter gamers. If the theme/Old Testament IP works for you then add another point to it. 
     </p>
   </header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stripe Payment Button</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f6f9fc;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .button-container {
+      text-align: center;
+    }
+
+    .pay-button {
+      display: inline-block;
+      padding: 14px 28px;
+      background-color: #635bff; /* Stripe purple */
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 4px 6px rgba(99, 91, 255, 0.2);
+    }
+
+    .pay-button:hover {
+      background-color: #4f46e5;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(99, 91, 255, 0.3);
+    }
+
+    .pay-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(99, 91, 255, 0.2);
+    }
+
+    .note {
+      margin-top: 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="button-container">
+    <a
+      href="https://buy.stripe.com/bJecMX9wq2qVaOuez8gIo00"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="pay-button"
+    >
+      Buy Now
+    </a>
+    <p class="note">Replace the href with your actual Stripe payment link</p>
+  </div>
+</body>
+</html>
 
   <section class="image-section">
     <!-- PNG 格式图片 -->
@@ -182,4 +249,5 @@ Overall, this is simple card game. That does not mean it is bad. <br />
 </body>
 
 </html>
+
 
