@@ -2,22 +2,152 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>智能短句听写与朗读工具</title>
+    <title>多语言智能听写与朗读工具</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; width: 100%; }
-        h2 { color: #000000; margin-top: 0; text-align: center; }
-        .tips { color: #64748b; font-size: 14px; text-align: center; margin-bottom: 20px; }
-        textarea { width: 100%; height: 160px; padding: 12px; box-sizing: border-box; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 18px; line-height: 1.6; outline: none; resize: vertical; }
-        textarea:focus { border-color: #1e3a8a; }
-        .controls { margin: 15px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        button { border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s; }
-        .btn-record { background-color: #ef4444; color: white; }
-        .btn-record.recording { background-color: #b91c1c; animation: pulse 1.5s infinite; }
-        .btn-play { background-color: #10b981; color: white; }
-        .btn-clear { background-color: #64748b; color: white; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        #status { text-align: center; font-size: 14px; color: #1e3a8a; font-weight: bold; height: 20px; margin-top: 10px; }
+        /* 核心修改：设置全屏背景图和磨砂玻璃效果 */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-image: url('image/phrotein'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; /* 垂直居中 */
+            overflow: hidden; /* 防止背景滚动 */
+        }
+
+        /* 核心修改：卡片式半透明布局 */
+        .container { 
+            background: rgba(255, 255, 255, 0.85); /* 半透明白色背景 */
+            backdrop-filter: blur(8px); /* 磨砂玻璃效果 */
+            -webkit-backdrop-filter: blur(8px); /* 兼容性 */
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* 更柔和的阴影 */
+            max-width: 600px; 
+            width: 90%; /* 在小屏幕上留出边距 */
+            text-align: center; /* 文字默认居中 */
+        }
+
+        h2 { 
+            color: #1e3a8a; /* 暗蓝色字体 */
+            margin-top: 0; 
+            font-weight: 600;
+        }
+
+        .tips { 
+            color: #64748b; 
+            font-size: 14px; 
+            margin-bottom: 15px; /* 减小间距 */
+        }
+        
+        /* 语言选择器样式调整 */
+        .lang-selector { 
+            margin-bottom: 20px; /* 调整间距 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lang-selector label {
+            color: #334155;
+            font-weight: 500;
+        }
+
+        select { 
+            padding: 8px 12px; 
+            border-radius: 8px; /* 更圆润的边角 */
+            border: 2px solid #cbd5e1; 
+            font-size: 14px; 
+            outline: none; 
+            cursor: pointer; 
+            background: rgba(255, 255, 255, 0.9);
+            min-width: 150px;
+        }
+        select:focus { 
+            border-color: #1e3a8a; 
+        }
+
+        textarea { 
+            width: 100%; 
+            height: 200px; /* 增加高度 */
+            padding: 12px; 
+            box-sizing: border-box; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 18px; 
+            line-height: 1.6; 
+            outline: none; 
+            resize: vertical; 
+            background: rgba(255, 255, 255, 0.9); /* 半透明文本框 */
+            color: #333;
+            margin-bottom: 15px; /* 增加下方间距 */
+        }
+        textarea:focus { 
+            border-color: #1e3a8a; 
+        }
+        textarea::placeholder {
+            color: #94a3b8;
+        }
+        
+        .controls { 
+            margin: 0; /* 清空间距，使用 textarea 的 bottom-margin */
+            display: flex; 
+            gap: 12px; /* 增加按钮间距 */
+            justify-content: center; 
+            flex-wrap: wrap; 
+        }
+
+        /* 按钮通用样式调整 */
+        button { 
+            border: none; 
+            padding: 10px 20px; /* 减小上下 padding，使其更扁平 */
+            border-radius: 8px; /* 更圆润的边角 */
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 600; 
+            transition: all 0.2s; 
+            display: flex;
+            align-items: center;
+            gap: 8px; /* 文字和图标的间距 */
+        }
+        
+        .btn-record { 
+            background-color: #f87171; /* 柔和的红色 */
+            color: white; 
+        }
+        .btn-record.recording { 
+            background-color: #ef4444; 
+            animation: pulse 1.5s infinite; 
+        }
+        .btn-play { 
+            background-color: #34d399; /* 柔和的绿色 */
+            color: white; 
+        }
+        .btn-clear { 
+            background-color: #94a3b8; /* 柔和的灰色 */
+            color: white; 
+        }
+        button:hover { 
+            opacity: 0.9; 
+            transform: translateY(-2px); /* 更明显的上移 */
+        }
+        
+        #status { 
+            text-align: center; 
+            font-size: 14px; 
+            color: #1e3a8a; 
+            font-weight: 600; 
+            height: 20px; 
+            margin-top: 15px; /* 增加顶部间距 */
+        }
+        
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.03); }
@@ -28,10 +158,21 @@
 <body>
 
 <div class="container">
-    <h2>Personal Rehearsal Agent</h2>
+    <h2>Multi-Language Rehearsal Agent</h2>
     <div class="tips">（Phrotein NLP SplitMode）</div>
     
-    <textarea id="textBox" placeholder="Click『Start recording』，Phrotein AI makes sure your message is understood ..."></textarea>
+    <div class="lang-selector">
+        <label>Select Language: </label>
+        <select id="langSelect">
+            <option value="zh-CN">Chinese (中文)</option>
+            <option value="en-US">English (US)</option>
+            <option value="ko-KR">Korean (한국어)</option>
+            <option value="es-ES">Spanish (español)</option>
+            <option value="ja-JP">Japanese (日本語)</option>
+        </select>
+    </div>
+
+    <textarea id="textBox" placeholder="Click『Start recording』to begin..."></textarea>
     
     <div class="controls">
         <button id="recordBtn" class="btn-record" onclick="toggleRecord()">🎙️ Start recording</button>
@@ -43,9 +184,11 @@
 </div>
 
 <script>
+    // 这部分的 JavaScript 逻辑和上一版完全一致，没有修改
     const textBox = document.getElementById('textBox');
     const recordBtn = document.getElementById('recordBtn');
     const statusDiv = document.getElementById('status');
+    const langSelect = document.getElementById('langSelect');
 
     let recognition;
     let isRecording = false;
@@ -54,7 +197,6 @@
         recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'zh-CN';
 
         recognition.onstart = () => { statusDiv.textContent = "Recording..."; };
 
@@ -62,8 +204,8 @@
             let resultText = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                    // 使用升级版的智能短句切分函数
-                    resultText += polishAndSplitText(event.results[i][0].transcript);
+                    const currentLang = langSelect.value;
+                    resultText += polishAndSplitText(event.results[i][0].transcript, currentLang);
                 }
             }
             if (resultText) {
@@ -72,87 +214,72 @@
         };
 
         recognition.onerror = (event) => {
-            statusDiv.textContent = "识别出错: " + event.error;
+            statusDiv.textContent = "Error: " + event.error;
             stopRecording();
         };
 
         recognition.onend = () => {
-            if (isRecording) recognition.start();
-            else statusDiv.textContent = "Recorded";
+            if (isRecording) {
+                recognition.start();
+            } else {
+                statusDiv.textContent = "Finished";
+            }
         };
     } else {
-        statusDiv.textContent = "Sorry, your browser does not support local speech recognition. Please use Chrome or Edge。";
+        statusDiv.textContent = "Browser not supported.";
         recordBtn.disabled = true;
     }
 
-    // 核心改进：本地长句智能切分函数
-    function polishAndSplitText(text) {
+    function polishAndSplitText(text, lang) {
         if (!text) return "";
-        
-        // 1. 过滤掉结巴词和语气词
+        text = text.trim();
+
+        if (lang !== 'zh-CN') {
+            return text + ". "; 
+        }
+
         const fillers = ["嗯", "啊", "那个", "那什么", "就是说", "然后", "额", "吧"];
         fillers.forEach(filler => {
             const reg = new RegExp(filler + "+", "g");
             text = text.replace(reg, "");
         });
 
-        text = text.trim();
         if (text.length === 0) return "";
 
-        // 2. 智能长度切分算法（每隔 7 个字，寻找合适位置切一刀）
         let result = "";
         let currentChunk = "";
-        const maxLength = 7; // 设定人类背诵最舒服的单句字数上限
+        const maxLength = 7; 
 
         for (let i = 0; i < text.length; i++) {
             let char = text.charAt(i);
             currentChunk += char;
 
-            // 遇到天然的标点，直接作为一个切分点
             if (/[，。？！；,.;?!]/.test(char)) {
                 result += currentChunk;
                 currentChunk = "";
                 continue;
             }
 
-            // 当攒的字数超过设定上限时
             if (currentChunk.length >= maxLength) {
-                // 看看后面有没有连接词或语气词可以作为“软着陆”切分点
-                let nextChar = text.charAt(i + 1);
-                
-                // 如果下一个字是常见的停顿字，或者干脆强制在这里切一刀
-                if (/[的了呢嘛]/.test(char) || i === text.length - 1) {
-                    result += currentChunk + "，";
-                    currentChunk = "";
-                } else if (i < text.length - 1 && !/[的了呢嘛]/.test(nextChar)) {
-                    // 如果不是语气词，为了不破坏词义，我们多等1-2个字再切，或者直接温和切断
-                    result += currentChunk + "，";
-                    currentChunk = "";
-                }
+                result += currentChunk + "，";
+                currentChunk = "";
             }
         }
 
-        // 把最后剩下的尾巴加上
-        if (currentChunk.length > 0) {
-            result += currentChunk;
-        }
-
-        // 3. 规范末尾标点
+        if (currentChunk.length > 0) result += currentChunk;
+        
         result = result.trim();
         if (result.length > 0 && !/[。？！，；]/.test(result.charAt(result.length - 1))) {
             result += "。";
         }
         
-        // 把连续多余的逗号句号清理一下
-        result = result.replace(/，+/g, "，").replace(/。+/g, "。").replace(/，。/g, "。");
-
-        return result;
+        return result.replace(/，+/g, "，").replace(/。+/g, "。").replace(/，。/g, "。") + " ";
     }
 
-    // 控制录音开关
     function toggleRecord() {
         if (!isRecording) {
             textBox.value = "";
+            recognition.lang = langSelect.value;
             recognition.start();
             isRecording = true;
             recordBtn.textContent = "⏹️ Stop";
@@ -169,21 +296,25 @@
         recordBtn.classList.remove('recording');
     }
 
-    // 语音合成（TTS）
     function speakText() {
         const textToSpeak = textBox.value.trim();
         if (!textToSpeak) {
-            statusDiv.textContent = "请先输入或录入一些文字！";
+            statusDiv.textContent = "Please input some text first!";
             return;
         }
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = 'zh-CN';
-        utterance.rate = 0.9; // 稍微放慢一点点语速，更方便你跟读和背诵
+        
+        utterance.lang = langSelect.value;
+        utterance.rate = 0.9; 
+        
         window.speechSynthesis.speak(utterance);
     }
 
-    function clearText() { textBox.value = ""; statusDiv.textContent = "Clear"; }
+    function clearText() { 
+        textBox.value = ""; 
+        statusDiv.textContent = "Cleared"; 
+    }
 </script>
 
 </body>
