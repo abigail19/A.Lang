@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phrotein Design | Pacific Northwest Interior Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --pnw-forest: #2D3E2E;
+            --pnw-earth: #8C6D5E;
+            --pnw-sage: #98A087;
+            --pnw-sky: #D4E0E7;
+            --pnw-white: #F8F7F4;
+            --accent: #4A6C6F;
+        }
+
+        body {
+            background-color: var(--pnw-white);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .hero {
+            height: 550px;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                        url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .section-title {
+            color: var(--pnw-forest);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--pnw-sage);
+            padding-left: 12px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .highlight {
+            background-color: var(--pnw-sky);
+            padding: 2.5rem;
+            border-radius: 12px;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .highlight h2 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .contact-bar {
+            background-color: var(--pnw-earth);
+            color: white;
+            text-align: center;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        .newsletter {
+            background-color: var(--pnw-forest);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .newsletter input {
+            padding: 12px 20px;
+            width: 320px;
+            max-width: 100%;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+            margin-bottom: 10px;
+        }
+
+        .newsletter button {
+            padding: 12px 24px;
+            background-color: var(--pnw-sage);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .newsletter button:hover {
+            background-color: var(--accent);
+        }
+
+        footer {
+            background-color: #222;
+            color: #ccc;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        a {
+            color: var(--pnw-sky);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div>
+            <h1>Phrotein Design</h1>
+            <p>Pacific Northwest Interior Design • Nature + Modern Living • Smart Homes • Kid-Friendly Spaces</p>
+        </div>
+    </div>
+
+    <!-- Contact Bar -->
+    <div class="contact-bar">
+        Contact Us Today: <strong>206-608-0001</strong>
+    </div>
+
+    <div class="container">
+        <!-- PNW Classic Living Style -->
+        <h2 class="section-title">Classic PNW Living Style</h2>
+        <p>Warm wood tones, large windows embracing nature, earthy palettes, and a calm, organic flow define the timeless Pacific Northwest aesthetic. Every space is designed to connect you with the outdoors.</p>
+
+        <div class="grid">
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af" alt="PNW Living Room">
+                <div class="card-content">
+                    <h3>Nature-Inspired Design</h3>
+                    <p>Natural light, wooden elements, and soft textures create harmony with the Pacific Northwest landscape.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc" alt="Modern Tech Home">
+                <div class="card-content">
+                    <h3>Smart Modern Technology</h3>
+                    <p>Seamless tech integration makes daily life convenient, clean, and futuristic.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1570561465864-f8f53b93d18d" alt="Kid-Friendly Space">
+                <div class="card-content">
+                    <h3>Kid-Friendly Environment</h3>
+                    <p>Safe, engaging, and real-kid-height play areas built for joy and growth.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Highlight Section -->
+        <div class="highlight">
+            <h2>Our Unique Strength: Student-Engaged Design</h2>
+            <p>At Phrotein Design, we blend youthful creativity, fresh perspectives, and professional expertise to craft spaces that feel vibrant, thoughtful, and truly one-of-a-kind.</p>
+        </div>
+
+        <!-- LG Partnership -->
+        <h2 class="section-title">Partnered with LG – Innovative Electronic Design</h2>
+        <p>Our collaboration with LG brings next-generation smart electronics into your home. The immersive, interactive TV experience becomes a centerpiece for family connection and modern living.</p>
+    </div>
+
+    <!-- Newsletter Section -->
+    <div class="newsletter">
+        <h2>Don’t Miss Out!</h2>
+        <p>Sign up for our newsletter and download the newest design showcase instantly.</p><br>
+        <form>
+            <input type="email" placeholder="Your email address" required>
+            <button type="submit">Sign Up & Download</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>Phrotein Design | Pacific Northwest Interior Design | Contact: 206-608-0001</p>
+    </footer>
+
+</body>
+</html>
