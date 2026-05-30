@@ -133,6 +133,28 @@
       <img src="./images/youtube.png" alt="World Game" />
       <div class="game-title">Youtube</div>
     </a>
+
+     <a href="quiz-game.html" class="game-card">
+      <img src="./images/checker.png" alt="Subscribe" />
+      <div class="game-title">Youtube</div>
+    </a>
+
+      <div class="subscribe-inline">
+  <span class="title">Subscribe Today</span>
+  <form id="inlineForm">
+    <input type="text" placeholder="Name" id="inName">
+    <input type="email" placeholder="Email" id="inEmail">
+    <button type="submit">Subscribe</button>
+  </form>
+  <span id="inlineTip"></span>
+</div>
+
+<style>
+.subscribe-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+ 
     <!-- Firebase SDK CDN 引用 -->
     <!-- 注意：我使用的是 Firebase JS SDK v10.12.2。你可以根据 Firebase 控制台提供的最新版本进行调整。 -->
     <script type="module">
@@ -148,7 +170,7 @@
         storageBucket: "subscription-58af8.firebasestorage.app",
         messagingSenderId: "749210653",
         appId: "1:749210653:web:0b3ee9aed77b68152f8af4",
-        measurementId: "G-MCJVG4VCZ7" // Google Analytics
+        measurementId: "G-MCJVG4VCZ7"
       };
 
       const app = initializeApp(firebaseConfig);
