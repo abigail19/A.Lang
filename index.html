@@ -141,54 +141,80 @@
 
       <div class="subscribe-inline">
   <span class="title">Subscribe Today</span>
-  <form id="inlineForm">
-    <input type="text" placeholder="Name" id="inName">
-    <input type="email" placeholder="Email" id="inEmail">
-    <button type="submit">Subscribe</button>
-  </form>
-  <span id="inlineTip"></span>
-</div>
+<!-- 修改后的表单结构 -->
+<form id="contact-form" method="post">  <!-- 1. 加上 id="contact-form"，去掉 action -->
+    <div class="form-group">
+        <input type="text" id="form-name" name="name" class="form-control" placeholder="Name" required /> <!-- 2. 加上 id="form-name" -->
+    </div>
+    <div class="form-group">
+        <input type="email" id="form-email" name="email" class="form-control" placeholder="Email" required /> <!-- 3. 加上 id="form-email" -->
+    </div>
+    <div class="form-group">
+        <textarea id="form-message" name="message" class="form-control" placeholder="Message" required></textarea> <!-- 4. 加上 id="form-message" -->
+    </div>
+    <button type="submit" class="btn btn-default">Send Message</button>
 
 <style>
-.subscribe-inline {
+ subscribe-inline {
   display: flex;
   align-items: center;
   gap: 10px;
- 
-    <!-- Firebase SDK CDN 引用 -->
-    <!-- 注意：我使用的是 Firebase JS SDK v10.12.2。你可以根据 Firebase 控制台提供的最新版本进行调整。 -->
-    <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-      import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'; // 针对 Cloud Firestore
-      import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';     // 针对 Firebase Authentication
-      import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
+<!-- 你的其他 script 标签保持不动... -->
+    <script src="js/custom.js"></script>
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyC5_oW3S6lEFo2h0sKbJVYVM8JA38V0Quw",
-        authDomain: "subscription-58af8.firebaseapp.com",
-        projectId: "subscription-58af8",
-        storageBucket: "subscription-58af8.firebasestorage.app",
-        messagingSenderId: "749210653",
-        appId: "1:749210653:web:0b3ee9aed77b68152f8af4",
-        measurementId: "G-MCJVG4VCZ7"
-      };
+    <!-- 🎯 注入以下连接 AWS Lambda 的核心代码 -->
+    <script>
+    document.getElementById('contact-form').addEventListener('submit', async (event) => {
+        event.preventDefault(); // 阻止网页默认的提交刷新行为
 
-      const app = initializeApp(firebaseConfig);
-     
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      const analytics = getAnalytics(app);
+        // 1. 抓取用户在表单里填写的值
+        const nameValue = document.getElementById('form-name').value;
+        const emailValue = document.getElementById('form-email').value;
+        const messageValue = document.getElementById('form-message').value;
 
-     
-      console.log("Firebase 应用已初始化:", app);
-      console.log("Firestore 已初始化:", db);
-      console.log("Authentication 已初始化:", auth);
+        // 2. 🚀 这里替换为你稍后在 AWS API Gateway 中生成的接口 URL
+        const awsApiUrl = 'https://你的API_ID.execute-api.us-west-2.amazonaws.com/prod/contact';
 
-      // 为了让 script.js 能够访问到这些初始化后的对象，你可以将它们挂载到 window 对象上
-      // 或者在 script.js 中使用模块导入方式 (如果 script.js 也是一个模块)
-      window.db = db;
-      window.auth = auth;
-      // window.analytics = analytics;
+        // 3. 改变按钮状态，提示用户正在发送
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = 'Sending...';
+        submitBtn.disabled = true;
+
+        try {
+            // 4. 异步将数据以 JSON 格式投递给 AWS
+            const response = await fetch(awsApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: nameValue,
+                    email: emailValue,
+                    message: messageValue
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Thank you! Your message has been sent successfully.');
+                document.getElementById('contact-form').reset(); // 成功后清空表单
+            } else {
+                alert('Oops! Something went wrong: ' + (data.error || 'Server error'));
+            }
+        } catch (error) {
+            console.error('Network Error:', error);
+            alert('Unable to connect to the server. Please try again later.');
+        } finally {
+            // 5. 恢复按钮状态
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    </script>
+</body>
+
 
     </script>
 </section>
