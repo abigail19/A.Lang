@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phrotein | AI for Education </title>
   <style>
     * {
@@ -11,230 +12,301 @@
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      padding: 40px 20px;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+      color: #334155;
+      padding: 60px 20px;
       text-align: center;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
     }
 
     header {
-      margin-bottom: 40px;
+      margin-bottom: 64px;
     }
 
     h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      color: #2c3e50;
+      font-size: 3.2rem;
+      margin-bottom: 16px;
+      color: #1e293b;
+      letter-spacing: 1px;
     }
 
     p.description {
-      font-size: 1.2rem;
-      max-width: 700px;
+      font-size: 1.15rem;
+      max-width: 720px;
       margin: 0 auto;
-      color: #555;
+      color: #475569;
+      line-height: 1.8;
     }
 
     .games-section {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 40px;
-      margin-top: 60px;
+      gap: 32px;
+      margin-bottom: 80px;
     }
 
     .game-card {
       width: 300px;
       text-align: center;
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      background: #fff;
-      transition: transform 0.3s ease;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+      background: #ffffff;
+      transition: all 0.3s ease;
+      text-decoration: none;
     }
 
     .game-card:hover {
-      transform: translateY(-8px);
+      transform: translateY(-10px);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
     }
 
     .game-card img {
       width: 100%;
-      height: auto;
+      height: 200px;
+      object-fit: cover;
       display: block;
     }
 
     .game-title {
-      padding: 16px;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #34495e;
+      padding: 20px 16px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* 订阅表单区域 */
+    .subscribe-inline {
+      max-width: 600px;
+      margin: 80px auto;
+      background: #ffffff;
+      padding: 36px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.07);
+    }
+    .subscribe-inline .title {
+      display: block;
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #1e293b;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border 0.25s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    textarea.form-control {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      border: none;
+      background-color: #2563eb;
+      color: white;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+    .btn:hover {
+      background-color: #1d4ed8;
+    }
+    .btn:disabled {
+      background: #60a5fa;
+      cursor: not-allowed;
     }
 
     footer {
-      margin-top: 60px;
-      font-size: 0.9rem;
-      color: #aaa;
+      margin-top: 100px;
+      padding-top: 40px;
+      border-top: 1px solid #e2e8f0;
+      color: #64748b;
+    }
+    .footer-content {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .contact-info {
+      margin-bottom: 16px;
+    }
+    .copyright {
+      font-size: 0.95rem;
+    }
+
+    /* 移动端适配 */
+    @media(max-width:768px){
+      h1{
+        font-size: 2.2rem;
+      }
+      .game-card{
+        width: calc(100% - 30px);
+        max-width: 340px;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Phrotein</h1>
-    <p class="description">
-      Phrotein AI to solve complicated problems in education setting<br />
-      What Do I Know About AI, Classroom Technology, and Parenting?<br />
-•	Order your board game.<br />
-•	Start your personalized test.<br />
-•	Instruct your kids to learn from mistakes.<br />
+  <div class="container">
+    <header>
+      <h1>Phrotein</h1>
+      <p class="description">
+        Phrotein AI to solve complicated problems in education setting<br>
+        What Do I Know About AI, Classroom Technology, and Parenting?<br><br>
+        • Order your board game.<br>
+        • Start your personalized test.<br>
+        • Instruct your kids to learn from mistakes.
+      </p>
+    </header>
 
-    </p>
-  </header>
+    <section class="games-section">
+      <a href="promise.html" class="game-card">
+        <img src="./images/Promise.png" alt="Promise Game" />
+        <div class="game-title">Promise</div>
+      </a>
 
-  <section class="games-section">
-    <a href="promise.html" class="game-card">
-      <img src="./images/Promise.png" alt="Promise Game" />
-      <div class="game-title">Promise</div>
-    </a>
+      <a href="furniture.html" class="game-card">
+        <img src="./images/child.png" alt="Interior Design" />
+        <div class="game-title">Design</div>
+      </a>
 
- <section class="games-section">
-    <a href="journey.html" class="game-card">
-      <img src="./images/helen.png" alt="PNW road trip" />
-      <div class="game-title">Design<div>
-    </a>
-        
- <section class="games-section">
-    <a href="furniture.html" class="game-card">
-      <img src="./images/child.png" alt="Interior Design" />
-      <div class="game-title">Design<div>
-    </a>
+      <a href="journey.html" class="game-card">
+        <img src="./images/helen.jpj" alt="PNW road trip" />
+        <div class="game-title">Road Trip</div>
+      </a>
+      
+      <a href="https://kneel-cheer-34234044.figma.site" class="game-card" target="_blank" rel="noopener noreferrer">
+        <img src="./images/Stream.png" alt="Stream Game" />
+        <div class="game-title">Stream</div>
+      </a>
+
+      <a href="https://set-spout-91602605.figma.site" class="game-card" target="_blank" rel="noopener noreferrer">
+        <img src="./images/rehearsal.jpeg" alt="Rehearsal Game" />
+        <div class="game-title">Rehearsal</div>
+      </a>
+      
+      <a href="quiz-game.html" class="game-card">
+        <img src="./images/checker.png" alt="checker" />
+        <div class="game-title">Checker</div>
+      </a>
+
+      <a href="preschool.html" class="game-card">
+        <img src="./images/phrotein.jpg" alt="phrotein" />
+        <div class="game-title">Convert SFH to a Preschool</div>
+      </a>
    
- <section class="games-section">
-    <a href="https://kneel-cheer-34234044.figma.site" class="game-card" target="_blank" rel="noopener noreferrer">
-      <img src="./images/Stream.png" alt="Stream Game" />
-      <div class="game-title">Stream<div>
-    </a>
+      <a href="blog1.html" class="game-card">
+        <img src="./images/phrotein.jpg" alt="phrotein" />
+        <div class="game-title">Practical Strategies for Theme-Based Fellowship</div>
+      </a>
 
- <section class="games-section">
-    <a href="https://set-spout-91602605.figma.site" class="game-card" target="_blank" rel="noopener noreferrer">
-      <img src="./images/rehearsal.jpeg" alt="Rehearsal Game" />
-      <div class="game-title">Rehearsal</div>
-    </a>
-    
-    <a href="quiz-game.html" class="game-card">
-      <img src="./images/checker.png" alt="checker" />
-      <div class="game-title">Checker</div>
-    </a>
+      <a href="https://www.youtube.com/@Phrotein-AI" class="game-card" target="_blank" rel="noopener noreferrer">
+        <img src="./images/youtube.png" alt="World Game" />
+        <div class="game-title">Youtube</div>
+      </a>
 
-     <a href="preschool.html" class="game-card">
-       <img src="./images/phrotein.jpg" alt="phrotein" />
-      <div class="game-title">Convert SFH to a Preschool</div>
-    </a>
-   
+      <a href="quiz-game.html" class="game-card">
+        <img src="./images/checker.png" alt="Subscribe" />
+        <div class="game-title">Checker Quiz</div>
+      </a>
+    </section>
 
-    <a href="blog1.html" class="game-card">
-      <img src="./images/phrotein.jpg" alt="phrotein" />
-      <div class="game-title">Practical Strategies for Theme-Based Fellowship</div>
-
-     <a href="https://www.youtube.com/@Phrotein-AI" class="game-card" target="_blank" rel="noopener noreferrer">
-      <img src="./images/youtube.png" alt="World Game" />
-      <div class="game-title">Youtube</div>
-    </a>
-
-     <a href="quiz-game.html" class="game-card">
-      <img src="./images/checker.png" alt="Subscribe" />
-      <div class="game-title">Youtube</div>
-    </a>
-
-      <div class="subscribe-inline">
-  <span class="title">Subscribe Today</span>
-<!-- 修改后的表单结构 -->
-<form id="contact-form" method="post">  <!-- 1. 加上 id="contact-form"，去掉 action -->
-    <div class="form-group">
-        <input type="text" id="form-name" name="name" class="form-control" placeholder="Name" required /> <!-- 2. 加上 id="form-name" -->
+    <div class="subscribe-inline">
+      <span class="title">Subscribe Today</span>
+      <form id="contact-form" method="post">
+        <div class="form-group">
+            <input type="text" id="form-name" name="name" class="form-control" placeholder="Name" required>
+        </div>
+        <div class="form-group">
+            <input type="email" id="form-email" name="email" class="form-control" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+            <textarea id="form-message" name="message" class="form-control" placeholder="Message" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-default">Submit & Subscribe</button>
+      </form>
     </div>
-    <div class="form-group">
-        <input type="email" id="form-email" name="email" class="form-control" placeholder="Email" required /> <!-- 3. 加上 id="form-email" -->
-    </div>
-    <div class="form-group">
-        <textarea id="form-message" name="message" class="form-control" placeholder="Message" required></textarea> <!-- 4. 加上 id="form-message" -->
-    </div>
-    <button type="submit" class="btn btn-default">Submit & Subscribe</button>
+  </div>
 
-<style>
- subscribe-inline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-<!-- 你的其他 script 标签保持不动... -->
-    <script src="js/custom.js"></script>
-
-    <!-- 🎯 注入以下连接 AWS Lambda 的核心代码 -->
-    <script>
-    document.getElementById('contact-form').addEventListener('submit', async (event) => {
-        event.preventDefault(); // 阻止网页默认的提交刷新行为
-
-        // 1. 抓取用户在表单里填写的值
-        const nameValue = document.getElementById('form-name').value;
-        const emailValue = document.getElementById('form-email').value;
-        const messageValue = document.getElementById('form-message').value;
-
-        // 2. 🚀 AWS API Gateway 
-        const awsApiUrl = 'https://v1vt627j22.execute-api.us-east-2.amazonaws.com';
-
-        // 3. 改变按钮状态，提示用户正在发送
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = 'Sending...';
-        submitBtn.disabled = true;
-
-        try {
-            // 4. 异步将数据以 JSON 格式投递给 AWS
-            const response = await fetch(awsApiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: nameValue,
-                    email: emailValue,
-                    message: messageValue
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert('Thank you! Your message has been sent successfully.');
-                document.getElementById('contact-form').reset(); // 成功后清空表单
-            } else {
-                alert('Oops! Something went wrong: ' + (data.error || 'Server error'));
-            }
-        } catch (error) {
-            console.error('Network Error:', error);
-            alert('Unable to connect to the server. Please try again later.');
-        } finally {
-            // 5. 恢复按钮状态
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-    </script>
-</section>
-
-<footer>
+  <footer>
     <div class="footer-content container">
         <div class="contact-info">
             <p><strong>Yuanfeng LLC</strong></p>
             <p>☎️ +1 206-608-0001</p>
             <p>📧 phroteinai@gmail.com</p>
         </div>
-        
         <div class="copyright">
-            © 2026 Phrotein AI
+            © 2026 Phrotein AI<br>
             All rights reserved.
         </div>
     </div>
-</footer>
+  </footer>
+
+<script src="js/custom.js"></script>
+<script>
+document.getElementById('contact-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const nameValue = document.getElementById('form-name').value;
+    const emailValue = document.getElementById('form-email').value;
+    const messageValue = document.getElementById('form-message').value;
+    const awsApiUrl = 'https://v1vt627j22.execute-api.us-east-2.amazonaws.com';
+
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = 'Sending...';
+    submitBtn.disabled = true;
+
+    try {
+        const response = await fetch(awsApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: nameValue,
+                email: emailValue,
+                message: messageValue
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Thank you! Your message has been sent successfully.');
+            document.getElementById('contact-form').reset();
+        } else {
+            alert('Oops! Something went wrong: ' + (data.error || 'Server error'));
+        }
+    } catch (error) {
+        console.error('Network Error:', error);
+        alert('Unable to connect to the server. Please try again later.');
+    } finally {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+    }
+});
+</script>
 
 </body>
 </html>
