@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Journey of Grace | PNW Road Trip Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Georgia, serif;
+        }
+
+        :root {
+            --pnw-forest: #2D3E2E;
+            --pnw-ocean: #4A6C6F;
+            --pnw-sage: #98A087;
+            --pnw-sky: #D4E0E7;
+            --pnw-cream: #F8F7F4;
+            --text-dark: #2c2c2c;
+        }
+
+        body {
+            background-color: var(--pnw-cream);
+            color: var(--text-dark);
+            line-height: 1.75;
+        }
+
+        .blog-hero {
+            width: 100%;
+            height: 420px;
+            background: linear-gradient(rgba(0,0,0,0.22), rgba(0,0,0,0.22)), url('https://raw.githubusercontent.com/abigail19/A.Lang/master/images/helen.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .blog-hero h1 {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .blog-hero p {
+            font-size: 1.1rem;
+            opacity: 0.92;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 3.5rem 2rem;
+        }
+
+        .blog-main-image {
+            width: 100%;
+            border-radius: 14px;
+            box-shadow: 0 8px 26px rgba(0,0,0,0.10);
+            margin: 1rem 0 3rem;
+        }
+
+        .article-title {
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--pnw-forest);
+            margin-bottom: 2rem;
+        }
+
+        .subscribe-section {
+            background-color: var(--pnw-forest);
+            color: white;
+            text-align: center;
+            padding: 3.2rem 2rem;
+            margin-top: 3rem;
+        }
+
+        .subscribe-section h2 {
+            margin-bottom: 1rem;
+        }
+
+        .subscribe-section p {
+            max-width: 620px;
+            margin: 0 auto 1.6rem;
+            opacity: 0.9;
+        }
+
+        .subscribe-section input {
+            width: min(350px, 90%);
+            padding: 14px 18px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .subscribe-section button {
+            padding: 14px 28px;
+            background: var(--pnw-sage);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .subscribe-section button:hover {
+            background: var(--pnw-ocean);
+        }
+
+        footer {
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        @media(max-width:768px){
+            .blog-hero h1{
+                font-size: 1.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="blog-hero">
+        <h1>Pacific Northwest Road Trip Journal</h1>
+        <p>Reflections, Faith & Scenic Wanderings</p>
+    </section>
+
+    <div class="container">
+        <h2 class="article-title">A Journey of Grace by Abigail LANG</h2>
+          <img class="image" src="https://raw.githubusercontent.com/abigail19/A.Lang/master/images/bayarea.png" alt="A Journey of Grace Article">
+        <img class="blog-main-image" src="https://raw.githubusercontent.com/abigail19/A.Lang/master/images/helen.jpg" alt="A Journey of Grace Article">
+
+    </div>
+
+    <section class="subscribe-section">
+        <h2>Follow My Travel & Faith Journey</h2>
+        <p>Subscribe to receive future road trip journals, travel reflections, and new blog updates directly to your inbox.</p>
+        <form>
+            <input type="email" placeholder="Your email address" required>
+            <br>
+            <button type="submit">Subscribe Now</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>Pacific Northwest Road Trip Blog | Abigail LANG</p>
+    </footer>
+</body>
+</html>
